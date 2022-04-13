@@ -1,0 +1,500 @@
+mandatory: True
+code: |
+  if user_qualifies_209A:
+    qualified_209A
+	else: three_willful_acts
+--- 
+mandatory: True
+code: |
+  if three_willful_acts:
+    if intended_to_cause_fear:
+      if actually_caused_fear: 
+        qualified_258E
+      else: forced_sexual_relations
+    else: forced_sexual_relations
+  else: forced_sexual_relations 
+---
+mandatory: True
+code: |
+  if forced_sexual_relations:
+    qualified_258E
+  else: touched_private_part
+---
+mandatory: True
+code: |
+  if touched_private_part:
+    qualified_258E
+  else: raped 
+---
+mandatory: True
+code: |
+  if raped:
+    qualified_258E
+  else: stalked 
+---
+mandatory: True
+code: |
+  if stalked:
+    qualified_258E
+  else: drugged_for_sex 
+---
+mandatory: True
+code: |
+  if drugged_for_sex:
+    qualified_258E
+  else: sixteen_or_younger
+---
+mandatory: True
+code: |
+  if sixteen_or_younger:
+    if statutory_rape:
+      qualified_258E
+    else: enticement_of_child 
+  else: not_qualified
+---
+mandatory: True
+code: |
+  if enticement_of_child:
+    qualified_258E
+  else: not_qualified
+---
+include:
+  - docassemble.AssemblyLine:al_package.yml
+  - docassemble.ALMassachusetts:al_massachusetts.yml
+  - docassemble.MassAccess:massaccess.yml
+---
+metadata:
+  title: |
+    Restraining Order Eligibility
+  short title: |
+    Use this app to start the restraining order process
+  tags:
+    - FA-07-00-00-00
+  authors:
+    - Harris Cohn
+---
+mandatory: True
+comment: |
+  This contains metadata that will not be overwritten if this YAML file is included in another
+  file. Each file gets its own key in the interview_metadata dictionary.
+  Most keys are not currently used at runtime, other than "allowed courts".
+code: |
+  interview_metadata
+  if not defined("interview_metadata['RestrainingOrder2']"):
+    interview_metadata.initializeObject("RestrainingOrder2")
+    interview_metadata["RestrainingOrder2"].update({
+      "al_weaver_version": "1.6.1",
+      "generated on": "2022-04-05",
+      "title": "Restraining Order Eligibility",
+      "short title": "Use this app to start the restraining order process",
+      "description": "This application will allow you to begin the process of receiving a restraining order.",
+      "original_form": "",
+      "allowed courts": [
+        "Boston Municipal Court",
+        "District Court",
+        "Probate and Family Court",
+        "Superior Court",
+      ],
+      "categories": [
+        "FA-07-00-00-00",
+      ],        
+      "logic block variable": "interview_order_RestrainingOrder2",
+      "attachment block variable": "RestrainingOrder2_attachment",
+      "typical role": "plaintiff",
+    })
+---
+code: |
+  interview_metadata['main_interview_key'] =  'RestrainingOrder2'
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MA"
+---
+code: |
+  github_repo_name =  'docassemble-Restrainingorder2'
+---
+code: |
+  interview_short_title = "Ask the court for a restraining order"
+---
+code: |
+  al_form_type = 'starts_case'
+---
+objects:
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - other_parties: ALPeopleList.using(ask_number=True,target_number=1)
+---
+sections:
+  - review_RestrainingOrder2: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_RestrainingOrder2
+code: |
+  # Set the allowed courts for this interview
+  allowed_courts = interview_metadata["RestrainingOrder2"]["allowed courts"]
+  nav.set_section('review_RestrainingOrder2')
+  user_role = 'plaintiff'
+  users.gather()
+  other_parties.gather()
+  relation
+  type_of_abuse
+  set_progress(14)
+  three_willful_acts
+  intended_to_cause_fear
+  actually_caused_fear
+  set_progress(28)
+  forced_sexual_relations
+  touched_private_part
+  raped
+  set_progress(42)
+  stalked
+  drugged_for_sex
+  sixteen_or_younger
+  set_progress(57)
+  statutory_rape
+  enticement_of_child
+  set_progress(71)
+  set_parts(subtitle=str(users))
+  interview_order_RestrainingOrder2 = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  RestrainingOrder2_intro
+  interview_order_RestrainingOrder2
+  signature_date
+  # Save anonymized interview statistics (customize the saved data below)
+  store_variables_snapshot(data={'zip': users[0].address.zip})
+  RestrainingOrder2_preview_question
+  basic_questions_signature_flow
+  RestrainingOrder2_download
+---
+event: not_qualified
+question: |
+  Based on your answers, you are not eligible for a restraining order. 
+---
+event: qualified_258E
+question: |
+  Based on your answers, you should fill out a 258E harassment prevention order form. 
+
+---
+event: qualified_209A
+question: |
+  Based on your answers, you should fill out a 209A abuse prevention order form.
+
+---
+code: | 
+  user_qualifies_209A = relation != "Other" and type_of_abuse.any_true()   
+---
+
+sets:
+  - other_parties[i].name.first
+  - other_parties[i].name.last
+  - other_parties[i].name.middle
+  - other_parties[i].name.suffix
+id: names of opposing parties
+question: |
+  Who would you like to get a restraining order against?
+fields:
+  - code: |
+      other_parties[i].name_fields()
+---
+
+comment: |
+  This question is used to introduce your interview. Please customize
+id: Restraining_Order_Eligibility
+continue button field: RestrainingOrder2_intro
+question: |
+  Restraining Order Eligibility
+subquestion: |
+  <b>If you are in danger right now, call 911.</b>
+  
+  Please be prepared to answer questions about the type of harmful acts that have led you to seek a restraining order. 
+    
+  Additionally, be prepared to answer questions about the person who has performed these harmful acts.
+  
+  Upon completion of this first set of questions you will know which restraining order form should be filled out for the court (258E Harrasment Prevention Order or 209A Abuse Prevention Order).
+---
+id: What is your relation to the person you are seeking a restraining order against
+question: |
+  What is your relation to ${ other_parties.familiar() }?
+subquestion: |
+  Please select only one choice, even though more than one may apply.
+fields:
+  - "Relationship": relation
+    input type: radio
+    choices:
+      - We are married
+      - We are dating
+      - We are engaged
+      - We have a child together
+      - We live in the same house
+      - We are related by blood
+      - We are related by adoption
+      - Other
+---
+id: How has the person you are seeking a restraining order against abused you
+question: |
+  How has ${ other_parties.familiar() } abused you?
+subquestion: |
+  Although it may be difficult for you to reflect, please select all that are true.
+fields:
+  - "Type of abuse": type_of_abuse
+    datatype: checkboxes
+    choices:
+      - Hurt me physically
+      - Tried to hurt me physically
+      - Made me scared of getting physically hurt.
+      - Forced me to have sex or sexual contact.
+      - Made me have sex or sexual contact by threatening me or made me feel like I had no other choice.
+---
+id: Where do you currently live?
+question: |
+  Where do you currently live?
+fields:
+  - "Location": geographical_location
+    input type: radio
+    choices:
+      - In Massachusetts
+      - Outside of Massachusetts to avoid abuse
+      - Outside of Massachusetts
+---
+id: Has the person committed three or more willful and cruel acts
+question: |
+  Has ${ other_parties.familiar() } purposely committed three or more malicious acts?
+subquestion: |
+  These acts should be direct at YOU,  not someone else or your child. “Malicious” means cruel, hostile, or in revenge.
+yesno: three_willful_acts
+---
+id: Were these acts intended to cause you fear intimidation abuse or damage to your property
+question: |
+  Were these acts intended to cause you fear, intimidation, abuse, or damage to your property?
+yesno: intended_to_cause_fear
+---
+id: Did these acts actually cause you fear intimidation abuse or damage to your property
+question: |
+  Did these acts actually cause you fear, intimidation, abuse, or damage to your property?
+yesno: actually_caused_fear
+---
+id: Did you have sex with the person against your will because they forced or threatened you
+question: |
+  Did you have sex with ${ other_parties.familiar() } against your will because they forced or threatened you?
+yesno: forced_sexual_relations
+---
+id: Has the person touched a private part of your body without your permission
+question: |
+  Did ${ other_parties.familiar() } touch a private part of your body without your permission?
+yesno: touched_private_part
+---
+id: Has the person raped you
+question: |
+  Did ${ other_parties.familiar() } rape you?
+yesno: raped
+---
+id: Has the person stalked you
+question: |
+  Is ${ other_parties.familiar() } stalking you?
+subquestion: |
+  Stalking is defined as “a clear, repetitive pattern of intentional unwanted, harassing, or threatening behavior directed towards you that causes you fear of personal safety or that of immediate family members.”
+yesno: stalked
+---
+id: Has the person drugged you to have sex
+question: |
+  Did ${ other_parties.familiar() } drug you to have sex?
+yesno: drugged_for_sex
+---
+id: Are you the plaintiff seeking the restraining order 16 years old or younger
+question: |
+  Are you 16 years old or younger?
+yesno: sixteen_or_younger
+---
+id: Did the person have sex with you
+question: |
+  Did ${ other_parties.familiar() } have sex with you?
+yesno: statutory_rape
+---
+id: Has the person enticed you
+question: |
+  Did ${ other_parties.familiar() } entice you?
+subquestion: |
+  Enticement is when someone has lured, induced, persuaded, tempted, incited, solicited, coaxed, or invited you to either enter, exit, or remain within a vehicle, house, building, or outdoor space?
+yesno: enticement_of_child
+---
+id: preview RestrainingOrder2
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Make changes" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_RestrainingOrder2'), label='Make changes', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: RestrainingOrder2_preview_question    
+---
+code: |
+  signature_fields = []
+---
+id: RestrainingOrder2 review screen
+event: review_RestrainingOrder2
+question: |
+  Review your answers
+review:
+  - Edit: enticement_of_child
+    button: |
+      **Enticement of child**:
+      ${ word(yesno(enticement_of_child)) }
+  - Edit: raped
+    button: |
+      **Raped**:
+      ${ word(yesno(raped)) }
+  - Edit: drugged_for_sex
+    button: |
+      **Drugged for sex**:
+      ${ word(yesno(drugged_for_sex)) }
+  - Edit: type_of_abuse
+    button: |
+      **Type of abuse**:
+      ${ type_of_abuse.true_values() }
+  - Edit: geographical_location
+    button: |
+      **Geographical location**:
+      ${ geographical_location }
+  - Edit: relation
+    button: |
+      **Relationship**:
+      ${ relation }
+  - Edit: touched_private_part
+    button: |
+      **Touched private part**:
+      ${ word(yesno(touched_private_part)) }
+  - Edit: three_willful_acts
+    button: |
+      **Three willful acts**:
+      ${ word(yesno(three_willful_acts)) }
+  - Edit: forced_sexual_relations
+    button: |
+      **Forced sexual relations**:
+      ${ word(yesno(forced_sexual_relations)) }
+  - Edit: intended_to_cause_fear
+    button: |
+      **Intended to cause fear**:
+      ${ word(yesno(intended_to_cause_fear)) }
+  - Edit: stalked
+    button: |
+      **Stalked**:
+      ${ word(yesno(stalked)) }
+  - Edit: statutory_rape
+    button: |
+      **Statutory rape**:
+      ${ word(yesno(statutory_rape)) }
+  - Edit: sixteen_or_younger
+    button: |
+      **Sixteen or younger**:
+      ${ word(yesno(sixteen_or_younger)) }
+  - Edit: actually_caused_fear
+    button: |
+      **Actually caused fear**:
+      ${ word(yesno(actually_caused_fear)) }
+  - Edit: other_parties.revisit
+    button: |
+      **Other parties**
+
+      % for item in other_parties:
+        * ${ item }
+      % endfor
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+---
+continue button field: other_parties.revisit
+question: |
+  Edit other_parties
+subquestion: |
+  ${ other_parties.table }
+
+  ${ other_parties.add_action() }
+---
+table: other_parties.table
+rows: other_parties
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+edit:
+  - name.first
+confirm: True
+
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+edit:
+  - name.first
+confirm: True
+
+---
+id: download RestrainingOrder2
+event: RestrainingOrder2_download
+question: |
+  Your form is ready to download.
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Make changes" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_RestrainingOrder2'), label='Make changes', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+progress: 100
+---
+objects:
+  - RestrainingOrder2_post_interview_instructions: ALDocument.using(title="Instructions", filename="RestrainingOrder2_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - RestrainingOrder2_attachment: ALDocument.using(title="Restraining Order Eligibility", filename="RestrainingOrder2.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[RestrainingOrder2_post_interview_instructions,RestrainingOrder2_attachment], filename="RestrainingOrder2.docx_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[RestrainingOrder2_attachment], filename="RestrainingOrder2.docx_package.pdf", title="All forms to download for your records", enabled=True)
+---
+attachments:
+  - name: RestrainingOrder2 post interview instructions
+    filename: Post-interview-instructions     
+    variable name: RestrainingOrder2_post_interview_instructions[i]        
+    skip undefined: True
+    docx template file: RestrainingOrder2_next_steps.docx
+  - name: RestrainingOrder2 attachment
+    filename: RestrainingOrder2.docx     
+    variable name: RestrainingOrder2_attachment[i]        
+    skip undefined: True
+    docx template file: RestrainingOrder2.docx
