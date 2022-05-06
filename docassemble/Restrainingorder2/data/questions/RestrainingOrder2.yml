@@ -248,7 +248,7 @@ subquestion: |
 ---
 event: qualified_209A
 question: |
-  Based on your answers, you should request a 209A restraining order.
+  Based on your answers, you should request a 209A abuse prevention order.
 subquestion: |
  A {209A restraining order} is a court order that protects you from being abused by a member (or former member) of your household or family or someone you have been dating. It is called a 209A restraining order because the law that created it is Massachusetts General Laws Chapter 209A.
  
@@ -355,7 +355,7 @@ fields:
  
 terms:
  - malicious: |
-    “Malicious” means cruel, hostile, or in revenge.
+    “Malicious” means an act that was cruel, hostile, or done in revenge.
 ---
 id: Were these acts intended to cause you fear intimidation abuse or damage to your property
 question: |
