@@ -223,6 +223,7 @@ code: |
   basic_questions_signature_flow
   RestrainingOrder2_download
 ---
+prevent going back: True
 event: not_qualified
 question: |
   Based on your answers, you are likely not eligible for a restraining order. 
@@ -230,6 +231,12 @@ subquestion: |
   <b>If you believe you are in danger right now, call 911.</b> 
   
   There may be other options. Reach out to a domestic violence advocate for more help with safety planning. Call [Safelink](https://www.casamyrna.org/get-support/safelink): ${tel("1-877-785-2020")}.
+
+buttons:
+  - Start Over: restart
+  - Learn More: logout
+    url: https://www.mass.gov/doc/am-i-eligible-for-a-restraining-order-handout/download
+mandatory: True
 ---
 event: qualified_258E
 question: |
@@ -245,7 +252,7 @@ question: |
 subquestion: |
  A {209A restraining order} is a court order that protects you from being abused by a member (or former member) of your household or family or someone you have been dating. It is called a 209A restraining order because the law that created it is Massachusetts General Laws Chapter 209A.
  
- We can help you fill out the 209A form [here](https://apps.suffolklitlab.org/run/209a/#/2).
+ <b>We can help you fill out the 209A form:</b> ${ action_button_html("https://apps.suffolklitlab.org/run/209a/#/2", label="Fill out 209A form", color="primary", size="md") }
 
 terms:
  - 209A restraining order: |
@@ -279,7 +286,7 @@ question: |
 subquestion: |
   <b>If you are in danger right now, call 911.</b>
   
-  Please be prepared to answer questions about the harmful acts that have led you to want a restraining order. 
+  Please be prepared to answer questions about the harmful acts that have led you to requesting a restraining order. 
     
   Additionally, be prepared to answer questions about the person who has performed these harmful acts.
   
