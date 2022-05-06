@@ -225,7 +225,7 @@ code: |
 ---
 event: not_qualified
 question: |
-  Based on your answers, you are not eligible for a restraining order. 
+  Based on your answers, you are likely not eligible for a restraining order. 
 subquestion: |
   <b>If you believe you are in danger right now, call 911.</b> 
   
@@ -505,11 +505,11 @@ review:
       ${ word(yesno(enticement_of_child)) }
   - Edit: raped
     button: |
-      **Raped**:
+      **Sex without consent**:
       ${ word(yesno(raped)) }
   - Edit: rapedtwo
     button: |
-      **Raped**:
+      **Force used**:
       ${ word(yesno(rapedtwo)) }
   - Edit: drugged_for_sex
     button: |
