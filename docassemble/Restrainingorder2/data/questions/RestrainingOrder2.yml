@@ -1,65 +1,6 @@
-mandatory: True
-code: |
-  if user_qualifies_209A:
-    qualified_209A
-	else: three_willful_acts
---- 
-mandatory: True
-code: |
-  if three_willful_acts:
-    if intended_to_cause_fear:
-      if actually_caused_fear: 
-        qualified_258E
-      else: forced_sexual_relations
-    else: forced_sexual_relations
-  else: forced_sexual_relations 
----
-mandatory: True
-code: |
-  if forced_sexual_relations:
-    qualified_258E
-  else: touched_private_part
----
-mandatory: True
-code: |
-  if touched_private_part:
-    qualified_258E
-  else: raped 
----
-mandatory: True
-code: |
-  if raped:
-    qualified_258E
-  else: stalked 
----
-mandatory: True
-code: |
-  if stalked:
-    qualified_258E
-  else: drugged_for_sex 
----
-mandatory: True
-code: |
-  if drugged_for_sex:
-    qualified_258E
-  else: sixteen_or_younger
----
-mandatory: True
-code: |
-  if sixteen_or_younger:
-    if statutory_rape:
-      qualified_258E
-    else: enticement_of_child 
-  else: not_qualified
----
-mandatory: True
-code: |
-  if enticement_of_child:
-    qualified_258E
-  else: not_qualified
----
 include:
   - docassemble.AssemblyLine:al_package.yml
+  - docassemble.ALToolbox:escape_button.yml
   - docassemble.ALMassachusetts:al_massachusetts.yml
   - docassemble.MassAccess:massaccess.yml
 ---
@@ -67,7 +8,7 @@ metadata:
   title: |
     Restraining Order Eligibility
   short title: |
-    Use this app to start the restraining order process
+     Restraining Order 
   tags:
     - FA-07-00-00-00
   authors:
@@ -130,6 +71,50 @@ objects:
 sections:
   - review_RestrainingOrder2: Review your answers
 ---
+
+id: basic questions intro screen
+decoration: form-lineal
+question: |
+  Restraining Order Eligibility
+subquestion: |
+
+  There are different types of restraining orders that can be granted by a court. This site will     help you decide which type is the best for you.
+
+  This site is not a lawyer. If you would like a lawyer, find [your local
+  legal aid provider](https://www.lsc.gov/what-legal-aid/find-legal-aid).
+  
+  Tap the {green words} in any screen for a definition or more information.
+  
+  % if chat_partners_available().help:
+  Live help is currently available in this interview. Click the speech bubble
+  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
+  % endif
+fields:
+  - To continue, you must accept our [terms of use](${ AL_ORGANIZATION_HOMEPAGE }/privacy/): acknowledged_information_use
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use.        
+continue button field: al_intro_screen
+terms:
+  green words: |
+    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words.
+right: |
+  % if user_has_saved_answers:
+  ${fa_icon("bell", color="primary", size="sm")}
+  Saved answers available!  
+  
+  ${action_button_html(url_action('load_answer'), icon="folder-open", label=word("View answers"), size="sm" )}
+  % endif    
+---
+
+features:
+  progress bar: False
+---
 #################### Interview order #####################
 comment: |
   Controls order and branching logic for questions specific to this form
@@ -141,6 +126,66 @@ code: |
   user_role = 'plaintiff'
   users.gather()
   other_parties.gather()
+  
+  # conditonal logic begins
+  if user_qualifies_209A:
+    qualified_209A
+  else: 
+    three_willful_acts
+
+  if three_willful_acts:
+    if intended_to_cause_fear:
+      if actually_caused_fear: 
+        qualified_258E
+      else: 
+        forced_sexual_relations
+    else: 
+      forced_sexual_relations
+  else: 
+    forced_sexual_relations 
+
+  if forced_sexual_relations:
+    qualified_258E
+  else: 
+    touched_private_part
+
+  if touched_private_part:
+    qualified_258E
+  else: 
+    raped 
+
+  if raped:
+    if rapedtwo:
+      qualified_258E
+    else: 
+      stalked 
+  else: 
+    stalked 
+
+  if stalked:
+    qualified_258E
+  else: 
+    drugged_for_sex 
+
+  if drugged_for_sex:
+    qualified_258E
+  else: 
+    sixteen_or_younger
+
+  if sixteen_or_younger:
+    if statutory_rape:
+      qualified_258E
+    else: 
+      enticement_of_child 
+  else: 
+    not_qualified
+
+  if enticement_of_child:
+    qualified_258E
+  else: 
+    not_qualified
+  # conditonal logic ends
+
   relation
   type_of_abuse
   set_progress(14)
@@ -151,6 +196,7 @@ code: |
   forced_sexual_relations
   touched_private_part
   raped
+  rapedtwo
   set_progress(42)
   stalked
   drugged_for_sex
@@ -173,7 +219,6 @@ code: |
   interview_order_RestrainingOrder2
   signature_date
   # Save anonymized interview statistics (customize the saved data below)
-  store_variables_snapshot(data={'zip': users[0].address.zip})
   RestrainingOrder2_preview_question
   basic_questions_signature_flow
   RestrainingOrder2_download
@@ -181,19 +226,35 @@ code: |
 event: not_qualified
 question: |
   Based on your answers, you are not eligible for a restraining order. 
+subquestion: |
+  <b>If you believe you are in danger right now, call 911.</b> 
+  
+  There may be other options. Reach out to a domestic violence advocate for more help with safety planning. Call [Safelink](https://www.casamyrna.org/get-support/safelink): ${tel("1-877-785-2020")}.
 ---
 event: qualified_258E
 question: |
-  Based on your answers, you should fill out a 258E harassment prevention order form. 
-
+  Based on your answers, you should request a 258E harassment prevention order. 
+subquestion: |
+  A Harassment Prevention Order is a court order to protect you from harassment and abuse by someone who has harassed you.
+  
+  To get a Harassment Prevention Order, you must fill out this [form](https://www.mass.gov/doc/complaint-for-protection-from-harassment-gl-c-258e) and file it in any District Court, Boston Municipal Court, Juvenile Court, or Superior Court that covers the area where you live.
 ---
 event: qualified_209A
 question: |
-  Based on your answers, you should fill out a 209A abuse prevention order form.
+  Based on your answers, you should request a 209A restraining order.
+subquestion: |
+ A {209A restraining order} is a court order that protects you from being abused by a member (or former member) of your household or family or someone you have been dating. It is called a 209A restraining order because the law that created it is Massachusetts General Laws Chapter 209A.
+ 
+ We can help you fill out the 209A form [here](https://apps.suffolklitlab.org/run/209a/#/2).
+
+terms:
+ - 209A restraining order: |
+    [How can a 209A order help me?](https://www.masslegalhelp.org/domestic-violence/how-can-209a-help-me)
 
 ---
 code: | 
   user_qualifies_209A = relation != "Other" and type_of_abuse.any_true()   
+
 ---
 
 sets:
@@ -208,7 +269,7 @@ fields:
   - code: |
       other_parties[i].name_fields()
 ---
-
+mandatory: True
 comment: |
   This question is used to introduce your interview. Please customize
 id: Restraining_Order_Eligibility
@@ -218,11 +279,11 @@ question: |
 subquestion: |
   <b>If you are in danger right now, call 911.</b>
   
-  Please be prepared to answer questions about the type of harmful acts that have led you to seek a restraining order. 
+  Please be prepared to answer questions about the harmful acts that have led you to want a restraining order. 
     
   Additionally, be prepared to answer questions about the person who has performed these harmful acts.
   
-  Upon completion of this first set of questions you will know which restraining order form should be filled out for the court (258E Harrasment Prevention Order or 209A Abuse Prevention Order).
+  After answering a few questions, you will know which restraining order you should requst from the court (258E Harrasment Prevention Order or 209A Abuse Prevention Order).
 ---
 id: What is your relation to the person you are seeking a restraining order against
 question: |
@@ -230,7 +291,7 @@ question: |
 subquestion: |
   Please select only one choice, even though more than one may apply.
 fields:
-  - "Relationship": relation
+  - no label: relation
     input type: radio
     choices:
       - We are married
@@ -245,10 +306,8 @@ fields:
 id: How has the person you are seeking a restraining order against abused you
 question: |
   How has ${ other_parties.familiar() } abused you?
-subquestion: |
-  Although it may be difficult for you to reflect, please select all that are true.
 fields:
-  - "Type of abuse": type_of_abuse
+  - no label: type_of_abuse
     datatype: checkboxes
     choices:
       - Hurt me physically
@@ -261,73 +320,160 @@ id: Where do you currently live?
 question: |
   Where do you currently live?
 fields:
-  - "Location": geographical_location
+  - no label: geographical_location
     input type: radio
     choices:
       - In Massachusetts
       - Outside of Massachusetts to avoid abuse
       - Outside of Massachusetts
 ---
-id: Has the person committed three or more willful and cruel acts
+id: Has the person committed three or more malicious acts
 question: |
-  Has ${ other_parties.familiar() } purposely committed three or more malicious acts?
-subquestion: |
-  These acts should be direct at YOU,  not someone else or your child. “Malicious” means cruel, hostile, or in revenge.
-yesno: three_willful_acts
+  Three or more acts of harassment?
+ 
+fields:
+  - Has ${ other_parties.familiar() } committed three or more {malicious} acts at you on purpose?: three_willful_acts
+    datatype: yesnoradio
+    label above field: True
+    
+  - Did ${ other_parties.familiar() } do these acts to cause you fear, intimidation, abuse, or damage to your property?: intended_to_cause_fear
+    datatype: yesnoradio
+    label above field: True
+    show if: three_willful_acts
+    
+  - Did these acts <u>actually</u> cause you fear, intimidation, abuse, or damage to your property?: actually_caused_fear
+    datatype: yesnoradio
+    label above field: True
+    show if: intended_to_cause_fear
+ 
+terms:
+ - malicious: |
+    “Malicious” means cruel, hostile, or in revenge.
 ---
 id: Were these acts intended to cause you fear intimidation abuse or damage to your property
 question: |
-  Were these acts intended to cause you fear, intimidation, abuse, or damage to your property?
-yesno: intended_to_cause_fear
+  Did ${ other_parties.familiar() } do these acts to cause you fear, intimidation, abuse, or damage to your property?
+fields:
+  - no label: intended_to_cause_fear
+    datatype: yesnoradio
 ---
 id: Did these acts actually cause you fear intimidation abuse or damage to your property
 question: |
-  Did these acts actually cause you fear, intimidation, abuse, or damage to your property?
-yesno: actually_caused_fear
+  Did these acts <u>actually</u> cause you fear, intimidation, abuse, or damage to your property?
+fields:
+  - no label: actually_caused_fear
+    datatype: yesnoradio
 ---
 id: Did you have sex with the person against your will because they forced or threatened you
 question: |
-  Did you have sex with ${ other_parties.familiar() } against your will because they forced or threatened you?
-yesno: forced_sexual_relations
+  Did you have sex with ${ other_parties.familiar() } because you were threatened or forced?
+fields:
+  - no label: forced_sexual_relations
+    datatype: yesnoradio
 ---
 id: Has the person touched a private part of your body without your permission
 question: |
-  Did ${ other_parties.familiar() } touch a private part of your body without your permission?
-yesno: touched_private_part
+  Did ${ other_parties.familiar() } purposely touch a {private part} of your body without your permission?
+
+subquestion: |
+  A victim of an indecent assault a battery might be eligible for a restraining order. An indecent assault and battery occurs when a person <b>purposely</b> tocuhes a private part of another's body without permission.
+  
+terms:
+ - private part: |
+    Private parts of the body include the breasts, abdomen, buttocks, thighs, and pubic area.
+
+fields:
+  - no label: touched_private_part
+    datatype: yesnoradio
 ---
 id: Has the person raped you
 question: |
   Did ${ other_parties.familiar() } rape you?
-yesno: raped
+ 
+fields:
+  - Did ${ other_parties.familiar() } have sex with you without your consent?: raped
+    datatype: yesnoradio
+    label above field: True
+
+  - Did ${ other_parties.familiar() } use or threaten to use force when they had sex with you?: rapedtwo
+    datatype: yesnoradio
+    label above field: True
+    show if: raped
+
+---
+id: Has the person raped you element 2
+question: |
+  Did ${ other_parties.familiar() } use or threaten to use force when she had sex with you?
+fields:
+  - no label: rapedtwo
+    datatype: yesnoradio
+
+
 ---
 id: Has the person stalked you
 question: |
-  Is ${ other_parties.familiar() } stalking you?
-subquestion: |
-  Stalking is defined as “a clear, repetitive pattern of intentional unwanted, harassing, or threatening behavior directed towards you that causes you fear of personal safety or that of immediate family members.”
-yesno: stalked
+  Did ${ other_parties.familiar() } ever {stalk} you?
+fields:
+  - no label: stalked
+    datatype: yesnoradio
+    
+terms:
+ - stalk: |
+    Stalking is a repetitive pattern of intentional unwanted, harassing, or threatening behavior directed towards you that causes you fear.
+    
+  
 ---
 id: Has the person drugged you to have sex
 question: |
-  Did ${ other_parties.familiar() } drug you to have sex?
-yesno: drugged_for_sex
+  Did ${ other_parties.familiar() } ever drug you to have sex?
+fields:
+  - no label: drugged_for_sex
+    datatype: yesnoradio
 ---
-id: Are you the plaintiff seeking the restraining order 16 years old or younger
+   
+id: Are you 16 years old or younger
 question: |
-  Are you 16 years old or younger?
-yesno: sixteen_or_younger
+  16 years old or younger?
+
+fields:
+  - Are you 16 years old or younger?: sixteen_or_younger
+    datatype: yesnoradio
+    label above field: True
+
+  - Did ${ other_parties.familiar() } ever have sex with you?: statutory_rape
+    datatype: yesnoradio
+    label above field: True
+    show if: sixteen_or_younger
+
+  - Did ${ other_parties.familiar() } ever {entice} you?: enticement_of_child
+    datatype: yesnoradio
+    label above field: True
+    show if: 
+	    variable: statutory_rape
+	    is: False
+
+terms:
+ - entice: |
+    Enticement is when someone has lured, induced, persuaded, tempted, incited, solicited, coaxed, or invited you to either enter, exit, or remain within a vehicle, house, building, or outdoor space. 
+    
 ---
 id: Did the person have sex with you
 question: |
-  Did ${ other_parties.familiar() } have sex with you?
-yesno: statutory_rape
+  Did ${ other_parties.familiar() } ever have sex with you?
+fields:
+  - no label: statutory_rape
+    datatype: yesnoradio
 ---
 id: Has the person enticed you
 question: |
-  Did ${ other_parties.familiar() } entice you?
-subquestion: |
-  Enticement is when someone has lured, induced, persuaded, tempted, incited, solicited, coaxed, or invited you to either enter, exit, or remain within a vehicle, house, building, or outdoor space?
-yesno: enticement_of_child
+  Did ${ other_parties.familiar() } ever {entice} you?
+fields:
+  - no label: enticement_of_child
+    datatype: yesnoradio
+    
+terms:
+ - entice: |
+    Enticement is when someone has lured, induced, persuaded, tempted, incited, solicited, coaxed, or invited you to either enter, exit, or remain within a vehicle, house, building, or outdoor space
 ---
 id: preview RestrainingOrder2
 question: |
@@ -361,6 +507,10 @@ review:
     button: |
       **Raped**:
       ${ word(yesno(raped)) }
+  - Edit: rapedtwo
+    button: |
+      **Raped**:
+      ${ word(yesno(rapedtwo)) }
   - Edit: drugged_for_sex
     button: |
       **Drugged for sex**:
